@@ -1,20 +1,12 @@
 #Importar
-import math
-import numpy as np
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt 
+import math
+import csv
 from statistics import mean
 
 #Leer 
-
-doc_peaks = pd.read_csv('/Users/danielzarate/Desktop/PDI/PDI-1/Lab2/ecg_1min_rpeaks.csv')
-doc_min = pd.read_csv('/Users/danielzarate/Desktop/PDI/PDI-1/Lab2/ecg_1min.csv')
-doc_signal = pd.read_csv('/Users/danielzarate/Desktop/PDI/PDI-1/Lab2/signal1.csv')
-doc_signal_lista = doc_signal['Signal']
-doc_min_lista = doc_min['ECG']
-doc_peaks_lista = doc_peaks['R peaks']
-
-
 #1. Construya la señal de diente de sierra que se muestra a continuación 
 # y use la función fft para encontrar su espectro de frecuencia. 
 # Luego, reconstruya la señal usando los primeros 24 componentes por dos vías
@@ -72,7 +64,6 @@ plt.show()
 
 # Descomposicion Fourier 
 a0 = 2*np.mean(signal_organizada)
-print(a0)
 f = np.zeros(round(N/2))
 X_mag = np.zeros(round(N/2)) 
 X_phase = np.zeros(round(N/2))     
@@ -110,6 +101,9 @@ plt.show()
 #Realice los siguientes procedimientos:
 
 #a. Grafique el espectro de frecuencia de la señal completa usando la función fft.
+
+doc_signal = pd.read_csv('/Users/danielzarate/Desktop/PDI/PDI-1/Lab2/signal1.csv')
+doc_signal_lista = doc_signal['Signal']
 
 fs = 1000   
 N = len(doc_signal_lista)
@@ -229,15 +223,14 @@ plt.show()
 # rango de 40 a 180 latidos por minuto. Su estrategia debe ser completamente automática,
 #  es decir al final con un print(resultado) se debe poder ver la frecuencia cardiaca de la señal.
 
-
-ecg_csv = pd.read_csv("/Users/danielzarate/Desktop/PDI/PDI-1/Lab2/ecg_1min.csv")
-ecg_array = ecg_csv["ECG"]
+doc_min = pd.read_csv('/Users/danielzarate/Desktop/PDI/PDI-1/Lab2/ecg_1min.csv')
+doc_min_lista = doc_min['ECG']
 fs_ecg = 250
 periodo_fs_ecg = 1 / fs_ecg
 divisor_ecg = fs_ecg / 20
-N_ecg = len(ecg_array)
+N_ecg = len(doc_min_lista)
 N_zoom = N_ecg // divisor_ecg
-arreglo_fft = np.abs(np.fft.fft(ecg_array))
+arreglo_fft = np.abs(np.fft.fft(doc_min_lista))
 zoom_ecg_lista = arreglo_fft[0: int(N_zoom)]
 f_lista = fs_ecg * (np.arange(N_ecg) / N_ecg)
 f_zoom_lista = (fs_ecg / divisor_ecg)*(np.arange(N_zoom) / N_zoom)
@@ -261,4 +254,30 @@ valor_frecuencia_mas_alto = f_lista[posicion_frecuencia_max] #Valor frecuencia m
 ritmo_cardiaco = valor_frecuencia_mas_alto * 60
 print("El ritmo cardiaco es de {}bpm".format(round(ritmo_cardiaco)))
 
-        
+#b. El archivo ecg_1min_rpeaks.csv contiene los índices (posiciones) en los cuales 
+# se encuentra cada pico de las ondas R del electrocardiograma, las cuales son utilizadas para 
+# el cálculo de la frecuencia cardiaca normalmente. Encuentre a partir de este vector la frecuencia 
+# cardiaca instantánea (latido a latido), es decir el vector resultante de frecuencias cardiacas. 
+# Posteriormente promedie los valores del vector y compare ese valor con el encontrado en el numeral
+#  a. ¿Qué tanto se parecen? 
+# ¿Considera que la técnica de cálculo de la frecuencia a través del espectro es una medida confiable? 
+# Argumente su respuesta de porque sí o porque no según corresponda.
+
+
+
+doc_peaks = pd.read_csv('/Users/danielzarate/Desktop/PDI/PDI-1/Lab2/ecg_1min_rpeaks.csv')
+doc_peaks_lista = doc_peaks['R peaks']
+
+fs_peaks = 250
+N_peaks = len(doc_peaks_lista)
+Tt_peaks = N_peaks/fs_peaks
+f1_peaks = 1/Tt_peaks
+
+frecuencia_cardiaca_peaks = [doc_peaks_lista[0]]
+for i in range(1,N_peaks):
+    actual = round(doc_peaks_lista[i]/250,4)
+    anterior = round(doc_peaks_lista[i-1]/250,4)
+    frecuencia_cardiaca_peaks.append(round((1/(actual-anterior))*60,4))
+frecuencia_cardiaca_peaks[0] = round(frecuencia_cardiaca_peaks[0]/250,4)
+frecuencia_cardiaca_peaks_promedio = np.mean(frecuencia_cardiaca_peaks)
+print('La frecuencia cardiaca promedio por picos es de', frecuencia_cardiaca_peaks_promedio, "bpm")

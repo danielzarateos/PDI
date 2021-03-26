@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 df = pd.read_csv('/Users/danielzarate/Desktop/PDI/PDI-1/Lab1/data_example1.csv')
-df.plot(x='Time', y = ['S1','S4'], kind = 'line')
+df.plot(x='Time', y = ['S1','S1'], kind = 'line')
 #plt.show()
 
 x = df['S1']
